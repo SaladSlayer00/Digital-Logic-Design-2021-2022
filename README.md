@@ -14,16 +14,9 @@ Convolutional encoding is a type of encoding used for Forward Error Correction (
 
 Through convolutional encoding, a convolutional code is generated, which transforms each word $P_1$ into a word $P_2$. Let $l_1 = length (P_1)$ and $l_2 = length (P_2)$ be defined, the ratio $l_1/l_2$ is defined as  *the convolutional encoder's transmission rate*, with $l_2 \geq l_1$.
 
-Furthermore, the transformation is a function of the last $k$ input bits, where k is the code's *constraint length*.\
+Furthermore, the transformation is a function of the last $k$ input bits, where k is the code's *constraint length*.
 
 The purpose of the project is to implement a hardware component, using the VHDL hardware specification language, capable of interfacing with a RAM memory and applying a convolutional encoding with $rate = \frac{1}{2}$ and $k = 3$.
-
-<figure id="codificatore_convoluzionale_image">
-<img src="report/latex/convolutore_image.png" />
-<figcaption>Codificatore convoluzionale con <span class="math inline">$r
-= \frac{1}{2}$</span> e <span
-class="math inline"><em>k</em> = 3</span></figcaption>
-</figure>
 
 ## Project Requirements
 
