@@ -60,6 +60,6 @@ end rams_sp_wf;
 The following link to Vivado's *User Guide* provides further details:
 <https://www.xilinx.com/support/documentation/sw_manuals/xilinx2017_3/ug901-vivado-synthesis.pdf>
 
-# Architettura, approccio e scelte implementative
+# Implementation
 
 We decided to follow a *FSM* approach in the implementation of our component module. The complete project description, along with performance indicators and tests, are found in the report folder.
