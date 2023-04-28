@@ -4,11 +4,9 @@ author:
 - Beatrice Insalata - *10708628*
 - Teka Kimbi Ntimanputu - *10673197*
 
-\\ date: A.A. 2021-2022
-\\ title: Digital Logic Design Project
 ---
 # Digital Logic Design Project 2021-2022
-Final Mark : 30
+Final Mark : 30/30
 
 
 # Convolutional Codification and Project Introduction
