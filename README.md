@@ -3,8 +3,9 @@
 author:
 - Beatrice Insalata - *10708628*
 - Teka Kimbi Ntimanputu - *10673197*
-date: A.A. 2021-2022
-title: Digital Logic Design Project
+
+\\ date: A.A. 2021-2022
+\\ title: Digital Logic Design Project
 ---
 # Digital Logic Design Project 2021-2022
 Final Mark : 30
@@ -70,4 +71,4 @@ The following link to Vivado's *User Guide* provides further details:
 
 # Architettura, approccio e scelte implementative
 
-We decided to follow a *FSM*[1^] approach in the implementation of our component module. The complete project description, along with performance indicators and tests, are found in the report folder.
+We decided to follow a *FSM* approach in the implementation of our component module. The complete project description, along with performance indicators and tests, are found in the report folder.
