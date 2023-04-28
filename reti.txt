@@ -1,0 +1,314 @@
+----------------------------------------------------------------------------------
+-- Company Politecnico di Milano
+-- Engineer Beatrice Insalata , Teka Kimbi Ntimanputu
+-- 
+-- Create Date 06.05.2022 180034
+-- Design Name 
+-- Module Name 10708628_10673197 - Behavioral
+-- Project Name Progetto di Reti logiche 20212022
+-- Target Devices 
+-- Tool Versions 
+-- Description Convolutore di bit in 8-bit
+-- 
+-- Dependencies 
+-- 
+-- Revision
+-- Revision 0.01 - File Created
+-- Additional Comments
+-- 
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use ieee.std_logic_unsigned.all;
+
+entity project_reti_logiche is
+	port (
+		i_clk  in std_logic;
+		i_start  in std_logic;
+		i_rst  in std_logic;
+		i_data  in std_logic_vector(7 downto 0);
+		o_address  out std_logic_vector(15 downto 0);
+		o_done  out std_logic;
+		o_en  out std_logic;
+		o_we  out std_logic;
+		o_data  out std_logic_vector (7 downto 0)
+	);
+end project_reti_logiche;
+
+architecture Behavioral of project_reti_logiche is
+type state_type is (RST, START, WAIT_WORD, READ_WORD, WAIT_DATA, READ_DATA, HANDLER, WRITE, DECREASER, ENTER, STATE_SWITCH,DONE, S0, S1, S2, S3, WAIT_OUT); --stati vari della macchina generale
+
+-- SEGNALI VARI (per gestire il tutto)
+
+signal next_state state_type;
+signal first, second  std_logic;
+signal output_index  integer range 7 downto 0 = 7;
+signal words  std_logic_vector(7 downto 0); --per salvare il numero di w parole
+signal in_address  std_logic_vector(15 downto 0); -- per salvare l'indirizzo di lettura
+signal out_address  std_logic_vector(15 downto 0); -- per salvare l'indirizzo di scrittura
+signal input_word  std_logic_vector(7 downto 0); --per salvare il byte su cui sto lavorando
+signal output_word std_logic_vector(7 downto 0); -- mantiene momentaneamente il valore dell'uscita
+signal state integer range 3 downto 0;
+signal temp_index  integer range 7 downto 0= 7;
+signal temp_in  std_logic_vector(15 downto 0);
+signal temp_out  std_logic_vector(15 downto 0);
+signal temp_words  std_logic_vector(7 downto 0);
+signal flux  std_logic;
+
+
+begin 
+    state_reg process(i_clk,i_rst)                                        --sono i segnali dal quale dipende il cambiamento degli stati
+    begin
+        if(i_rst = '1')then
+           o_done = '0';
+           o_en = '0';
+           o_we = '0';
+           next_state = RST;
+        elsif falling_edge(i_clk) then
+            case next_state is
+                when RST =
+                   if(i_start = '1') then
+                    o_address = (others = '0');
+                    o_done = '0';
+                    o_en = '0';
+                    o_we = '0';
+                    o_data = (others = '0');
+                    first = '0';
+                    second = '0';
+                    output_index = 7;
+                    state = 0;
+                    flux = '0';
+                    in_address = std_logic_vector(to_unsigned(1,16));
+                    out_address = std_logic_vector(to_unsigned(1000, 16));
+                    output_word = (others = '0');
+                    words = (others = '0');
+                    temp_words = (others = '0');
+                    next_state = START;
+                   end if;
+                   
+                   when START =
+                         o_en = '1';
+                         o_we = '0';
+                         o_done = '0';
+                         temp_in = in_address;
+                         temp_out = out_address;
+                         next_state = WAIT_WORD; 
+                       
+                         
+                   when WAIT_WORD =
+                        o_en = '1';
+                        o_we = '0';
+                        o_done = '0';
+                        words = i_data;
+                        next_state = READ_WORD;
+                        
+                   when READ_WORD =
+                        o_en = '1';
+                        o_we = '0';
+                        o_done = '0';
+                        temp_words = words;
+                        if(words = 00000000)then
+                            o_done = '1';
+                            next_state = DONE;
+                        else
+                            next_state = WAIT_DATA;
+                        end if;
+                                          
+                   when WAIT_DATA =
+                        o_address = in_address;
+                        o_en = '1';
+                        o_we = '0';
+                        next_state = READ_DATA;
+                        
+                   when READ_DATA =
+                         o_en = '1';
+                         o_we = '0';
+                         output_index = 7;
+                         input_word = i_data;
+                         next_state = ENTER;
+
+                        
+                   when ENTER =
+                    o_en='0';
+                    o_we='0';
+                    o_done='0';
+                    if(flux = '0')then
+                        next_state =S0;
+                    else
+                        if state = 0 then
+                            next_state = S0;
+                        elsif state = 1 then 
+                            next_state = S1;
+                        elsif state = 2 then
+                            next_state = S2;
+                        else
+                            next_state = S3;
+                        end if; 
+                     end if;
+                        
+                                           
+                   when S0 =
+                    if(input_word(output_index) = '1') then
+                        first = '1';
+                        second = '1';
+                        state = 2;
+                    else 
+                        first = '0';
+                        second = '0';
+                        state = 0;
+                    end if;
+                    next_state = HANDLER;
+
+                    
+                    when S1 =
+                        if(input_word(output_index) = '1') then 
+                           first = '0';
+                           second = '0';
+                           state = 2;
+                          else 
+                           first = '1';
+                           second = '1';
+                           state = 0;
+                          end if;
+                          next_state = HANDLER;
+                          
+                          
+                    when S2 =
+                        if( input_word(output_index)= '1') then
+                           first = '1';
+                           second = '0';
+                           state = 3;
+                          else 
+                          first = '0';
+                          second = '1';
+                          state = 1;
+                          end if;
+                          next_state = HANDLER;
+                          
+                       when S3 =
+                          if(input_word(output_index) = '1') then
+                           first = '0';
+                           second = '1';
+                           state = 3;
+                          else 
+                           first = '1';
+                           second = '0';
+                           state = 1;
+                          end if;
+                          next_state = HANDLER;
+
+
+                    when HANDLER =
+                        if(output_index = 7 or output_index = 3) then
+                            output_word(7) = first;
+                            output_word(6) = second;
+                        elsif(output_index = 6 or output_index = 2) then 
+                            output_word(5) = first;
+                            output_word(4) = second;
+                        elsif(output_index = 5 or output_index = 1) then
+                            output_word(3) = first;
+                            output_word(2) = second;
+                        elsif (output_index = 4 or output_index = 0) then 
+                            output_word(1) = first;
+                            output_word(0) = second;
+                        end if;
+                        NEXT_STATE = DECREASER;
+                  
+                  when DECREASER =
+                   if(output_index = 7) then
+                        temp_index = 6;
+                        next_state = STATE_SWITCH;
+                   elsif(output_index = 6) then
+                        temp_index = 5;
+                        next_state = STATE_SWITCH;
+                   elsif(output_index = 5) then
+                        temp_index = 4;
+                        next_state = STATE_SWITCH;
+                   elsif(output_index = 4) then
+                        temp_index = 3;
+                        next_state = WRITE;
+                   elsif(output_index = 3) then
+                        temp_index = 2;
+                        next_state = STATE_SWITCH;
+                   elsif(output_index = 2) then
+                        temp_index = 1;
+                        next_state = STATE_SWITCH;
+                   elsif(output_index = 1) then
+                        temp_index = 0;
+                        next_state = STATE_SWITCH;
+                   else
+                        words = std_logic_vector(unsigned(temp_words - 1));
+                        temp_in = std_logic_vector(unsigned(in_address + 1));
+                        flux = '1';
+                        next_state = WRITE;
+                  end if;
+                 
+                    
+                        
+                   --when CHANGE_INDEX =
+                    --output_index = output_index - 1;
+                    --next_state = STATE_SWITCH;
+                        
+                  when STATE_SWITCH = 
+                        output_index = temp_index;
+                        if state = 0 then
+                            next_state = S0;
+                        elsif state = 1 then 
+                            next_state = S1;
+                        elsif state = 2 then
+                            next_state = S2;
+                        else
+                            next_state = S3;
+                        end if;   
+                  
+                  when WRITE =
+                        o_en = '1';
+                        o_we = '1';
+                        o_address = out_address;
+                        o_data = output_word;                       
+                        next_state = WAIT_OUT;
+                        temp_out = std_logic_vector(unsigned(out_address + 1));
+                        
+                 when WAIT_OUT =
+                    o_en = '0';
+                    o_we = '0';
+                    out_address = temp_out;
+                    if(words = 00000000) then 
+                        o_done = '1';
+                        next_state = DONE;
+                    elsif(output_index = 0) then
+                        --state = 0;
+                        temp_words = words;
+                        in_address = temp_in;
+                        next_state = WAIT_DATA;
+                    elsif(output_index = 4) then                                              
+                        next_state = STATE_SWITCH;
+                    end if;
+                 
+                 --when INCREASE_INDEX =
+                    --output_index = 7;
+                    --next_state = STATE_SWITCH;
+
+                 --when DONE =
+                        --o_done = '0';
+                       -- o_en = '0';
+                       -- o_we = '0';
+                       -- if(i_start = '0') then
+                          --  next_state = RST;
+                       -- else
+                       --     next_state = DONE;
+                       -- end if;
+                      
+                   when DONE =
+                    if(i_start = '0') then
+                        next_state = RST;
+                        o_done = '0';
+                        o_we = '0';
+                        o_en = '0';
+                     end if;
+                                    
+                      end case;
+             end if;
+            end process;
+end Behavioral;
